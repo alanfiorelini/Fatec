@@ -1,0 +1,166 @@
+ #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Produto {
+    int codigo;
+    char descricao[100];
+    int qtde_comprada;
+    float preco_unit;
+    float valor_compra;
+    float valor_ipi;
+    float valor_icms;
+    float valor_lucro;
+    float preco_unit_venda;
+    struct Produto* proximo;
+} Produto;
+
+Produto* criar_produto(int codigo) {
+    Produto* novo_produto = (Produto*)malloc(sizeof(Produto));
+    if (!novo_produto) {
+        printf("Erro ao alocar memória!\n");
+        exit(1);
+    }
+    novo_produto->codigo = codigo;
+    novo_produto->proximo = NULL;
+    return novo_produto;
+}
+
+void calcular_precos(Produto* produto) {
+    float x, y, z;
+    
+    printf("\nDigite o tipo do Produto (1- Saúde 2- Alimento 3- Higiene 4- Vestuário 5- Outro): ");
+    int tipo_produto;
+    scanf("%d", &tipo_produto);
+
+    if (tipo_produto == 1) { // Produto de Saúde
+        x = 0.10; y = 0.12; z = 0.20;
+    } else if (tipo_produto == 2) { // Produto de Alimento
+        x = 0.12; y = 0.18; z = 0.25;
+    } else if (tipo_produto == 3) { // Produto de Higiene
+        x = 0.10; y = 0.25; z = 0.20;
+    } else if (tipo_produto == 4) { // Produto de Vestuário
+        x = 0.15; y = 0.12; z = 0.25;
+    } else if (tipo_produto == 5) { // Produto de Outros Tipos
+        x = 0.10; y = 0.18; z = 0.30;
+    } else {
+        printf("Digite um número válido!\n");
+        return; // Encerra a função
+    }
+
+    printf("\nDigite a descrição do Produto: ");
+    scanf(" %[^\n]s", produto->descricao);
+
+    printf("\nDigite a Quantidade Comprada desse Produto: ");
+    scanf("%d", &produto->qtde_comprada);
+    
+    printf("\nDigite o Preço Unitário do Produto Comprado: ");
+    scanf("%f", &produto->preco_unit);
+
+    produto->valor_compra = produto->qtde_comprada * produto->preco_unit;
+    produto->valor_ipi = produto->preco_unit * x;
+    produto->valor_icms = (produto->preco_unit + produto->valor_ipi) * y;
+    produto->valor_lucro = produto->preco_unit * z;
+    produto->preco_unit_venda = produto->preco_unit + produto->valor_ipi + produto->valor_icms + produto->valor_lucro;
+
+    printf("\nCódigo do Produto: %d", produto->codigo);
+    printf("\nDescrição do Produto: %s", produto->descricao);
+    printf("\nValor da compra: %.2f", produto->valor_compra);
+    printf("\nValor de IPI: %.2f", produto->valor_ipi);
+    printf("\nValor do ICMS: %.2f", produto->valor_icms);
+    printf("\nValor do Lucro: %.2f", produto->valor_lucro);
+    printf("\nPreço Unitário da Venda: %.2f\n", produto->preco_unit_venda);
+}
+
+void incluir_produto(Produto** lista, int codigo) {
+    Produto* novo_produto = criar_produto(codigo);
+    calcular_precos(novo_produto);
+    novo_produto->proximo = *lista;
+    *lista = novo_produto;
+}
+
+void excluir_produto(Produto** lista, int codigo) {
+    Produto* atual = *lista;
+    Produto* anterior = NULL;
+
+    while (atual != NULL && atual->codigo != codigo) {
+        anterior = atual;
+        atual = atual->proximo;
+    }
+
+    if (atual == NULL) {
+        printf("Produto com código %d não encontrado!\n", codigo);
+        return;
+    }
+
+    if (anterior == NULL) {
+        // O produto a ser excluído é o primeiro da lista
+        *lista = atual->proximo;
+    } else {
+        anterior->proximo = atual->proximo;
+    }
+
+    free(atual);
+    printf("Produto com código %d excluído com sucesso!\n", codigo);
+}
+
+void listar_produtos(Produto* lista) {
+    Produto* atual = lista;
+    if (atual == NULL) {
+        printf("Nenhum produto cadastrado.\n");
+        return;
+    }
+
+    printf("\nLista de Produtos:\n");
+    while (atual != NULL) {
+        printf("Código: %d, Descrição: %s, Quantidade: %d, Preço Unitário: %.2f\n",
+               atual->codigo, atual->descricao, atual->qtde_comprada, atual->preco_unit);
+        atual = atual->proximo;
+    }
+}
+
+void liberar_lista(Produto* lista) {
+    Produto* temp;
+    while (lista) {
+        temp = lista;
+        lista = lista->proximo;
+        free(temp);
+    }
+}
+
+int main() {
+    Produto* lista_produtos = NULL;
+    int tipo_produto, codigo_produto = 1, opcao;
+
+    while (1) {
+        printf("\nMenu:\n");
+        printf("1. Incluir Produto\n");
+        printf("2. Excluir Produto\n");
+        printf("3. Listar Produtos\n");
+        printf("4. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                incluir_produto(&lista_produtos, codigo_produto);
+                codigo_produto++;
+                break;
+            case 2: {
+                printf("Digite o código do produto a ser excluído: ");
+                int codigo;
+                scanf("%d", &codigo);
+                excluir_produto(&lista_produtos, codigo);
+                break;
+            }
+            case 3:
+                listar_produtos(lista_produtos);
+                break;
+            case 4:
+                liberar_lista(lista_produtos);
+                return 0;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    }
+}
